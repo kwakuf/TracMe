@@ -30,7 +30,7 @@ import android.widget.Toast;
 public class TracMe extends SlidingActivity implements OnClickListener {
 	private static final String TAG = "WiFiDemo";
 	private static String SOMETHING_HAPPENED = "com.example.somethinghappened";
-	private static String EXTRA_INTEGER = "extra integer";
+	private static String EXTRA_INTEGER = "extra integer hey";
 
 	WifiManager wifi;
 	BroadcastReceiver receiver2;
