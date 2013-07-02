@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:background="#CCCCCC" >
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/abs__action_bar_default_height"
+        android:gravity="center"
+        android:background="#666666"
+        android:text="TracMe Settings" />
+
+    <TextView
+        android:id="@+id/textViewOutfile"
+        android:layout_width="match_parent"
+        android:layout_height="18dp"
+        android:layout_marginTop="20dp"
+        android:background="#666666"
+        android:gravity="center_vertical"
+        android:text="Output File" />
+
+    <EditText
+        android:id="@+id/editTextOutFile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Output File"
+        android:ems="10" >
+
+        <requestFocus />
+    </EditText>
+    
+    <TextView
+        android:id="@+id/textViewAPTfile"
+        android:layout_width="match_parent"
+        android:layout_height="18dp"
+        android:layout_marginTop="20dp"
+        android:background="#666666"
+        android:gravity="center_vertical"
+        android:text="Access Point Table File" />
+
+    <EditText
+        android:id="@+id/editTextAPTFile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="AP Table File"
+        android:ems="10" >
+
+        <requestFocus />
+    </EditText>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="18dp"
+        android:layout_marginTop="20dp" >
+
+        <TextView
+            android:id="@+id/textViewDimensions"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.50"
+            android:background="#666666"
+            android:gravity="center_vertical"
+            android:text="Grid Dimensions" />
+
+        <TextView
+            android:id="@+id/textViewDirection"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.50"
+            android:background="#666666"
+            android:gravity="center_vertical"
+            android:text="Sampling Direction" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <EditText
+            android:id="@+id/editTextXaxis"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginLeft="10dp"
+            android:ems="10"
+            android:hint="@string/x_axis"
+            android:inputType="number" />
+
+        <EditText
+            android:id="@+id/editTextYaxis"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="5dp"
+            android:ems="10"
+            android:hint="@string/y_axis"
+            android:inputType="number" />
+
+        <Spinner
+            android:id="@+id/spinner1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.50"
+            android:entries="@array/directions_array" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textViewNumSamples"
+        android:layout_width="match_parent"
+        android:layout_height="18dp"
+        android:layout_marginTop="20dp"
+        android:background="#666666"
+        android:gravity="center_vertical"
+        android:text="Samples per Cell" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+        
+        <EditText
+            android:id="@+id/editTextNumSamples"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginLeft="10dp"
+            android:ems="10"
+            android:hint=" "
+            android:inputType="number" />
+                
+		    <Button
+		        android:id="@+id/buttonSet"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:layout_marginLeft="120dp"
+		        android:layout_gravity="right"
+		        android:text="Set Values" />        
+    </LinearLayout>
+    
+
+  
+</LinearLayout>

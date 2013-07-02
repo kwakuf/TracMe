@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+      <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="5dp"
+          android:orientation="horizontal" >
+
+          <EditText
+              android:id="@+id/editTextX"
+              android:layout_width="40dp"
+              android:layout_height="wrap_content"
+              android:layout_marginRight="10dp"
+              android:ems="10"
+              android:hint="@string/x_axis"
+              android:inputType="number"
+              android:selectAllOnFocus="false" />
+
+          <EditText
+              android:id="@+id/editTextY"
+              android:layout_width="40dp"
+              android:layout_height="wrap_content"
+              android:layout_marginRight="10dp"
+              android:ems="10"
+              android:hint="@string/y_axis"
+              android:inputType="number"
+              android:selectAllOnFocus="false" />
+          
+         <Button android:layout_width="wrap_content"
+              android:layout_height="wrap_content" android:id="@+id/buttonScan"
+              android:text="Scan"></Button>
+         
+			  <Button
+			      android:id="@+id/buttonGps"
+			      android:layout_width="wrap_content"
+			      android:layout_height="wrap_content"
+			      android:text="GPS" />
+			
+			  <Button
+			      android:id="@+id/buttonSave"
+			      android:layout_width="wrap_content"
+			      android:layout_height="wrap_content"
+			      android:text="Save Results" />         
+      </LinearLayout>
+   
+  <ScrollView android:id="@+id/ScrollView01"
+    android:layout_width="match_parent" android:layout_height="wrap_content">
+    <TextView android:layout_width="fill_parent"
+      android:layout_height="wrap_content" android:id="@+id/textStatus"
+      android:text="Console" />
+  </ScrollView>
+
+</LinearLayout>

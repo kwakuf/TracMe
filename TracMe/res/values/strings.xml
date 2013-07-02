@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World, WiFiDemo!</string>
+    <string name="app_name">TracMe</string>
+    <string name="x_axis">X</string>
+    <string name="y_axis">Y</string>
+    
+    <string-array name="directions_array">
+     <item>North</item>
+     <item>East</item>
+     <item>South</item>
+     <item>West</item>
+     <item>Any Direction</item>
+    </string-array>
+</resources>
