@@ -45,6 +45,90 @@ public class SampleProgram
         newCellSample.setLoc( gridx, gridy );
         samples.add( newCellSample );
     }
+    
+    public void finishAndSave(String locDesc, String fileComment, APTable apts)
+    {
+        //apTable = new APTable(getAPFileName());
+        //apTable.loadTable();
+    	
+    	int offset = 0; //The offset for the rssi array index of an access point
+
+        // Create and open the sample file if it doesn't already exist.
+        sampleFile = new AndroidLog( sampleFileName + ".txt" );
+
+        // Create and open the extended sample file if it doesn't already exist.
+        sampleFileExt = new AndroidLog( sampleFileName + "_ext.txt" );
+
+        // Get the current date so we can record that in the file.
+        Date date = new Date();
+        String dateFormat = DateFormat.getDateTimeInstance( DateFormat.LONG,
+                DateFormat.LONG ).format( date );
+
+        // Write the header information for the sample file.
+        sampleFileExt
+                .save( "//-------------------------------------------------------------------------------\n" );
+        sampleFileExt.save( "// Sample File Name:        "
+                + sampleFileName + "\n" );
+        sampleFileExt.save( "// Date:                    " + dateFormat
+                + "\n" );
+        sampleFileExt.save( "// Location:                " + locDesc
+                + "\n" );
+        sampleFileExt.save( "// GPS Coordinates:         " + "???"
+                + "\n" );
+        sampleFileExt.save( "// GIS Map Coordinates:     " + "???"
+                + "\n" );
+        sampleFileExt.save( "// Comment:                 " + fileComment
+                + "\n" );
+        sampleFileExt.save( "// Direction:               " + direction
+                + "\n" );
+        sampleFileExt
+                .save( "//-------------------------------------------------------------------------------\n\n" );
+
+        String printString = new String();
+
+        // Write the max x/y coordinates and the number of access points at top
+        // of file.
+        printString = ( getGridSizeX() + 1 ) + "\n" + ( getGridSizeY() + 1 )
+                + "\n" + apts.getAPTable().size() + "\n";
+        sampleFile.save( printString );
+        
+        for( int i = 0; i < samples.size(); i++ )
+        {
+            // Get the xy location of the current cell.
+            int locx = samples.get( i ).getLoc().x;
+            int locy = samples.get( i ).getLoc().y;
+            
+            // Output the location information to file.
+            
+            //In this case, we only need to output one location (because we are
+            // using a point system instead of a coordinate system
+            sampleFile.save( "###" + locx + "\n" );
+            sampleFileExt.save( "###" + locx + "," + locy + "\n" );
+            
+            // For each coordinate output the rssi data for each access point
+            for (int j = 0; j < this.getNumSamples(); j++)
+            {
+            	for (int k = 0; k < apts.getAPs().size(); k++)
+            	{
+            		printString = apts.getAPs().get( k ).getID() + ":"
+                        + apts.getAPs().get( k  ).getRSSI(j + offset) + ";";
+
+            		sampleFile.save( printString );
+            		sampleFileExt.save( printString );
+            		
+            	}
+        		
+                System.out.println( "" );
+                sampleFile.save( "\n" );
+                sampleFileExt.save( "\n" );
+                
+            }
+            
+            offset += this.getNumSamples();
+            
+        }
+        
+    }
 
     /**
      * Outputs the results of the scan to file.
@@ -302,7 +386,7 @@ public class SampleProgram
     {
         return gridy;
     }
-
+    
     /**
      * Setter method for name of sample file
      * 

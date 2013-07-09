@@ -9,9 +9,22 @@ import java.util.Comparator;
  * each accessor/mutator methods represents.
  * 
  * @author James Humphrey
+ * @author Kwaku Farkye
  */
 public class AccessPoint
 {
+
+	public AccessPoint()
+	{
+		this.totalSamples = 0;
+	}
+	
+	public AccessPoint(int totalSamples)
+	{
+		this.totalSamples = totalSamples;
+		initRSSIArray();
+	}
+	
    /**
     * Mutator for the AP ID value assigned by the custom AP table.
     * 
@@ -74,7 +87,29 @@ public class AccessPoint
    {
       return bssid;
    }
+   
+   /**
+    * Sets the total amount of samples this access point will hold
+    * 
+    * @param totalSamples
+    * 	The total number of samples this AP holds
+    */
+   public final void setTotalSamples(int totalSamples)
+   {
+	   this.totalSamples = totalSamples;
+	   initRSSIArray();
+   }
 
+   private void initRSSIArray()
+   {
+	   this.rssiList = new int[totalSamples];
+	   //Initialize the list to zeros
+	   for (int i = 0; i < totalSamples; i++)
+	   {
+		   rssiList[i] = 0;
+	   }
+   }
+   
    /**
     * Mutator for AP RSSI value received from the broadcast.
     * 
@@ -87,6 +122,20 @@ public class AccessPoint
    }
 
    /**
+    * Set the RSSI value of this access point at the current index
+    * 
+    * @param index
+    * 	The sample number (so we know where to put the rssi value in the list)
+    * 
+    * @param rssi
+    * 	The RSSI value to set
+    */
+   public void setRSSI(int index, int rssi)
+   {
+	   this.rssiList[index] = rssi;
+   }
+   
+   /**
     * Accessor for the AP assigned RSSI value.
     * 
     * @return The most recent RSSI value for this access point
@@ -95,7 +144,21 @@ public class AccessPoint
    {
       return rssi;
    }
-
+   
+   /**
+    * Get the RSSI value at the specified index
+    * 
+    * @param index
+    * 	The index (aka sample number) that we want the RSSI value for
+    * 
+    * @return
+    * 	The RSSI value of the sample number
+    */
+   public int getRSSI(int index)
+   {
+	   return rssiList[index];
+   }
+   
    /**
     * Mutator for AP channel received from the broadcast.
     * 
@@ -185,7 +248,7 @@ public class AccessPoint
     */
    public String toString()
    {
-      return new String( id + " " + ssid + " " + bssid + " " + rssi + " " + channel + " " + ht + " " + cc + " "
+      return new String( id + " " + ssid + " " + bssid + " " + channel + " " + ht + " " + cc + " "
             + security + "\n" );
    }
 
@@ -198,6 +261,13 @@ public class AccessPoint
    private String cc; // CC (Country Code) can be used to identify the country the AP is located in.
    private String security; // Indicates the type of security used by the AP and its (auth/unicast/group).
    ///private coord loc; // Physical location of the AP.
+   
+   //This access point's rssi values for each scan. The length of this list
+   //is the amount of coords in a sample set * number of samples per coordinate
+   private int[] rssiList;
+   
+   private int totalSamples; //The total number of times this access point is sampled for
+   
 }
 
 /**

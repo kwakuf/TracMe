@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.io.*;
 
+import android.net.wifi.ScanResult;
+
 /**
  * Creates and loads an AP table for a specified region. Once loaded, the main
  * function of this class is to map given AP BSSID's into an ID given by the AP
@@ -59,6 +61,42 @@ public class APTable
 
    }
 
+   /**
+    * Search for the access point in the access point table. 
+    * 
+    * @param apData
+    * 	The data for the access point that 
+    * 	we are looking to store in the acess point table
+    * 
+    * @param addValue
+    * 	Flag specifying whether the scan result should be added to this ap's rssi list
+    * 
+    * @param scanNumber
+    * 	The scan number we are on
+    * 
+    * @return
+    * 	True if the access point was found in the access point table.
+    * 	False otherwise.
+    */
+   public boolean lookupAP(ScanResult apData, boolean addValue, int scanNumber)
+   {
+	   for (int i = 0; i < aps.size(); i++)
+	   {
+		   if (aps.get(i).getBSSID().equals(apData.BSSID.toUpperCase()))
+		   {
+			   if (addValue)
+			   {
+				   //Found the correct AP, now add this rssi to the aps rssi list
+				   aps.get(i).setRSSI(scanNumber, apData.level + 100);
+			   }
+			   return true;
+		   }
+	   }
+	   
+	   //AP was not found in the list, so return false
+	   return false;
+   }
+   
    /**
     * Iterates through each AP in the provided list and maps its BSSID to the
     * corresponding ID value in the AP table file.
@@ -147,6 +185,23 @@ public class APTable
    }
 
    /**
+    * Sets the size of the rssi array for each access point in the ap table.
+    * Sets the value to the total number of scans to be done in this run of the
+    * application
+    * 
+    * @param totalScans
+    * 	the size to initialize each access point array to
+    * 	
+    */
+   public void setTotalScans(int totalScans)
+   {
+	   for (int i = 0; i < aps.size(); i++)
+	   {
+		   aps.get(i).setTotalSamples(totalScans);
+	   }
+   }
+   
+   /**
     * Create a new file with the specified name
     * 
     * @param fileName
@@ -184,6 +239,11 @@ public class APTable
       }
 
       return tableStr;
+   }
+   
+   public ArrayList< AccessPoint > getAPs()
+   {
+	   return aps;
    }
 
    private ArrayList< AccessPoint > aps; // A list of APs stored in the table.

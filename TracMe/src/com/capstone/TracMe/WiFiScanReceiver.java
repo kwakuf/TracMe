@@ -17,6 +17,11 @@ public class WiFiScanReceiver extends BroadcastReceiver {
   private static final String TAG = "WiFiScanReceiver";
   private static String EXTRA_INTEGER = "extra integer";
   
+  //The scan number we are currently on (access points will use this for
+  //filling out the rssi list
+  protected static int scanNumber = 0;
+  
+  
   TracMe wifiDemo;
   String apns; 
   public boolean received = false;
@@ -24,6 +29,7 @@ public class WiFiScanReceiver extends BroadcastReceiver {
   public WiFiScanReceiver(TracMe wifiDemo) {
     super();
     this.wifiDemo = wifiDemo;
+    this.scanNumber = 0;
   }
 
   @Override
@@ -33,21 +39,40 @@ public class WiFiScanReceiver extends BroadcastReceiver {
     }
     if (wifiDemo.buttonPressed.equals("scan")) {
       Log.d(TAG, "onClick() wifi.startScan(): " + wifiDemo.buttonPressed);
+      int count = 1;
       List<ScanResult> results = wifiDemo.wifi.getScanResults();
-
       apns = "Networks found:";
       wifiDemo.newList();
+      wifiDemo.getRawFile().save("L"+ wifiDemo.getPoint() + "\n{");
       for (ScanResult result : results) {
         apns += "\n" + result.SSID;
+        // TODO: Check if the access point is already in the list
+        // TODO: If not, create a new access point and set this rssi to the scan
+        // we are on
         
-        wifiDemo.ap = new AccessPoint();
-        wifiDemo.ap.setSSID(result.SSID);
-        wifiDemo.ap.setBSSID(result.BSSID);
-        wifiDemo.ap.setRSSI(result.level + 100);
+        if (!wifiDemo.apTable.lookupAP(result, true, scanNumber))
+        { //The access point was not found
+        	
+        	//Create a new access point and add it to the table
+        	wifiDemo.ap = new AccessPoint(wifiDemo.getTotalScans());    
+        	wifiDemo.ap.setSSID(result.SSID);
+        	wifiDemo.ap.setBSSID(result.BSSID.toUpperCase());
+        	wifiDemo.ap.setRSSI(scanNumber, result.level + 100);
+        	wifiDemo.ap.setChannel(Integer.valueOf(result.frequency).toString());
+        	wifiDemo.apList.add(wifiDemo.ap);
+        	wifiDemo.apTable.addAPToTable(wifiDemo.ap);
+        }
         
-        wifiDemo.apList.add(wifiDemo.ap);
+        //Save to the raw output file
+        wifiDemo.getRawFile().save(result.BSSID + ":" + result.level);
+        if (count < results.size())
+        	wifiDemo.getRawFile().save(",");
+        else
+        	wifiDemo.getRawFile().save("}\n");
+        
+        count++;
       }
-      wifiDemo.apTable.mapAPsToID(wifiDemo.apList, true);
+      //wifiDemo.apTable.mapAPsToID(wifiDemo.apList, true);
   
       Sample newSample = new Sample();
       newSample.setScan(wifiDemo.apList);
@@ -58,6 +83,9 @@ public class WiFiScanReceiver extends BroadcastReceiver {
       wifiDemo.prog.samples.get( wifiDemo.prog.samples.size() - 1 ).getSamples().add( newSample );
   
       wifiDemo.index++;
+      
+      scanNumber++; //Increment the scan number
+      
       wifiDemo.scan(wifiDemo.index);
     }
   }
@@ -65,4 +93,13 @@ public class WiFiScanReceiver extends BroadcastReceiver {
   public ArrayList< AccessPoint > getApList()  {
      return wifiDemo.apList;
   }
+
+  public static int getScanNumber() {
+	return scanNumber;
+  }
+
+  public static void setScanNumber(int scanNumber) {
+	WiFiScanReceiver.scanNumber = scanNumber;
+  }
+  
 }

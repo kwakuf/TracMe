@@ -39,12 +39,31 @@
 			      android:layout_width="wrap_content"
 			      android:layout_height="wrap_content"
 			      android:text="GPS" />
-			
+
 			  <Button
 			      android:id="@+id/buttonSave"
 			      android:layout_width="wrap_content"
 			      android:layout_height="wrap_content"
-			      android:text="Save Results" />         
+			      android:text="Save Results" />
+         
+      </LinearLayout>
+      
+      <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="5dp"
+          android:orientation="horizontal" >
+
+          <EditText
+              android:id="@+id/editLocation"
+              android:layout_width="100dp"
+              android:layout_height="wrap_content"
+              android:layout_marginRight="10dp"
+              android:layout_weight="0.26"
+              android:ems="10"
+              android:hint="@string/loc_name"
+              android:inputType="text"
+              android:selectAllOnFocus="false" />
       </LinearLayout>
    
   <ScrollView android:id="@+id/ScrollView01"

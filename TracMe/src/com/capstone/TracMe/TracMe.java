@@ -54,6 +54,17 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 	int maxX;
 	int maxY;
 	int totalSamples;
+	
+	private static int totalScans; // The total number of scans to be done in this instance of the application
+	
+    /** name of the raw output file */
+    private String rawFileName = "";
+    
+    /** point that will be sampled */
+    private int point;
+    
+    /** The raw file itself */
+    private AndroidLog rawFile;
 
 	int index = 0;
 	int valuesConfirmed = 0;
@@ -139,6 +150,33 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 				Log.d(TAG, "onClick() wifi.startScan()");
 
 				buttonPressed = "scan";
+				String inStr = ((EditText) findViewById(R.id.editLocation))
+						.getText().toString();
+				if (inStr.length() <= 0)
+				{
+					alertError("Please enter a name for this point/Location");
+				}
+				try {
+					int point = Integer.parseInt(inStr);
+					if (point < 0)
+					{
+						alertError("Invalid point");
+						return;
+					}
+					setPoint(point);
+				} catch (NumberFormatException ex)
+				{
+					alertError("Please enter a valid input for the point. It must be an integer");
+					return;
+				}
+				// To make the sample cell class happy, we will assign the grid locations
+				// as the point we are sampling
+				prog.setGridX(point);
+				prog.setGridY(point);
+				
+				writeToConsole("Point being sampled is: " + point);
+				scan(0);
+				/** THIS CODE WAS USED WHEN WE HAD A COORDINATE SYSTEM FOR SAMPLING
 				String inputStr = ((EditText) findViewById(R.id.editTextX))
 						.getText().toString();
 				if (inputStr.length() <= 0) {
@@ -197,8 +235,7 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 					writeToConsole("Coordinate being sampled: "
 							+ prog.getGridX() + "x" + prog.getGridY());
 					scan(0);
-					/* The run sample function can be called here */
-				}
+				} **/
 			}
 		} else if (view.getId() == R.id.buttonSet) {
 			// This is the submit button for all the unchangeable variables
@@ -299,7 +336,8 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 								@Override
 								public void onClick(DialogInterface dialog,
 										int which) {
-									prog.finishSampling("", ""); // Finish
+									prog.finishAndSave("", "", apTable);
+									//prog.finishSampling("", ""); // Finish
 																	// sampling
 																	// will be
 																	// in the
@@ -376,9 +414,11 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 		apTable.loadTable();
 
 		prog.setSampleFileName(outputfile);
+		setRawFile(outputfile);
 		prog.setDirection(direction);
 		prog.setAPFileName(aptablefile);
-
+		prog.setNumSamples(numSamples);
+		
 		writeToConsole("Output file set to: " + outputfile + ".txt");
 		writeToConsole("AP Table file set to: " + aptablefile + ".txt");
 		writeToConsole("Sampling direction set to: " + direction);
@@ -386,6 +426,12 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 				+ prog.getGridSizeY());
 		writeToConsole("Number of samples per cell: " + numSamples);
 		valuesConfirmed = 1;
+		
+		//Set the total number of scans to be done this run of the application
+		totalScans = prog.getGridSizeX() * prog.getGridSizeY() * prog.getNumSamples();
+		//Set the total number of scans for each access point in the array list
+		apTable.setTotalScans(totalScans);
+		
 	}
 
 	public void alertError(String msg) {
@@ -440,7 +486,6 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 			writeToConsole("Number of samples done: "
 					+ prog.getSamples().size());
 			writeToConsole("Number of samples needed: " + (totalSamples));
-
 			buttonPressed = "none";
 			// Check if correct amount of samples have been done
 			// if( prog.getSamples().size() == totalSamples )
@@ -451,6 +496,50 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 		return receiver.getApList();
 	}
 
+    /**
+     * Set the name of the raw ouptut file
+     * 
+     * @param val
+     * 	Value to set the file name to ("_tran" will be appended to the end)
+     */
+    public void setRawFile( String val )
+    {
+    	String rawFileName;
+    	rawFileName = val + "_tran";
+    	rawFile = new AndroidLog(rawFileName + ".txt");
+    }
+    
+    /**
+     * Get the name of the raw output file
+     * 
+     */
+    public AndroidLog getRawFile()
+    {
+    	return rawFile;
+    }
+	
+    /**
+     * Set the point that will be sampled next
+     * 
+     * @param point
+     * 	The name of the point we will be sampling next
+     */
+    public void setPoint(int point)
+    {
+    	this.point = point;
+    }
+    
+    /**
+     * Get the point that will be sampled next
+     * 
+     * @return
+     * 	The name of the point that is to be sampled next
+     */
+    public int getPoint()
+    {
+    	return this.point;
+    }
+    
 	public void writeToConsole(String msg) {
 		// Add a timestaamp
 		Time today = new Time(Time.getCurrentTimezone());
@@ -470,4 +559,9 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 	 * The list of AP data for the current scan.
 	 */
 	protected ArrayList<AccessPoint> apList;
+	
+	public int getTotalScans()
+	{
+		return totalScans;
+	}
 }

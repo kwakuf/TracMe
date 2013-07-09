@@ -4,6 +4,7 @@
     <string name="app_name">TracMe</string>
     <string name="x_axis">X</string>
     <string name="y_axis">Y</string>
+    <string name="loc_name">Location/Point</string>
     
     <string-array name="directions_array">
      <item>North</item>
