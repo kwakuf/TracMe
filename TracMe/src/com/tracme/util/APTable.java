@@ -1,10 +1,12 @@
-package com.capstone.TracMe;
+package com.tracme.util;
 
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.io.*;
 
 import android.net.wifi.ScanResult;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 /**
  * Creates and loads an AP table for a specified region. Once loaded, the main
@@ -15,20 +17,42 @@ import android.net.wifi.ScanResult;
  * @author James Humphrey
  * @author Kwaku Farkye
  * @author Ken Ugo
+ * 
  */
-public class APTable
+public class APTable implements Parcelable
 {
+	
+   /** A list of APs stored in the table. Pre-initialized */
+   private ArrayList< AccessPoint > aps = new ArrayList<AccessPoint>();
+   
+   /** Indicates if we want to write another debug file which will include more information about the APs. */
+   boolean writeDebugFile;
+   
+   /** The android log that stores the access point table information */
+   private AndroidLog tableLog;
+   
+   /** The android log that stores the access point table information */
+   private AndroidLog tableLog_debug;
+   
    /**
     * Creates and initializes an empty AP table.
     */
    public APTable( String tableName )
    {
       // Create and initialize the AP table to 0.
-      aps = new ArrayList< AccessPoint >();
       aps.clear();
 
-      tableLog = new AndroidLog(tableName + ".txt");
+      tableLog = new AndroidLog(tableName);
       tableLog_debug = new AndroidLog(tableName + "_debug.txt");
+   }
+   
+   /**
+    * Creates an empty APTable object and initializes fields to values stored in Parcel
+    * 
+    * @param in Parcel that will be read from to initialize fields
+    */
+   public APTable(Parcel in) {
+	   in.readTypedList(aps, AccessPoint.CREATOR);
    }
 
    /**
@@ -41,7 +65,6 @@ public class APTable
    {
       // Get the ID number of the last entry in the table (should be the highest value).
       int topID = 0;
-      ;
 
       // The first AP added should always begin with a value of 1.
       if( aps.size() > 0 )
@@ -76,26 +99,29 @@ public class APTable
     * 	The scan number we are on
     * 
     * @return
-    * 	True if the access point was found in the access point table.
-    * 	False otherwise.
+    * 	The ID of the access point that was found in the access point table.
+    * 	If no access point was found zero is returned.
     */
-   public boolean lookupAP(ScanResult apData, boolean addValue, int scanNumber)
+   public int lookupAP(ScanResult apData, boolean addValue, int scanNumber)
    {
+	   int apID = 0;
 	   for (int i = 0; i < aps.size(); i++)
 	   {
 		   if (aps.get(i).getBSSID().equals(apData.BSSID.toUpperCase()))
 		   {
+			   apID = aps.get(i).getID(); //Set the return value to the ID of the access point
 			   if (addValue)
 			   {
 				   //Found the correct AP, now add this rssi to the aps rssi list
 				   aps.get(i).setRSSI(scanNumber, apData.level + 100);
 			   }
-			   return true;
+			   
+			   return apID;
 		   }
 	   }
 	   
 	   //AP was not found in the list, so return false
-	   return false;
+	   return apID;
    }
    
    /**
@@ -219,7 +245,7 @@ public class APTable
    }
    
    /**
-    * Accessor method for the list of access points loaded in from the table.
+    * Getter method for the list of access points loaded in from the table.
     * 
     * @return The array list of known access points.
     */
@@ -242,13 +268,39 @@ public class APTable
       return tableStr;
    }
    
+   /**
+    * Get the APTable array list
+    *  
+    * @return Array List of Access points stored in this APTable object
+    * 
+    */
    public ArrayList< AccessPoint > getAPs()
    {
 	   return aps;
    }
 
-   private ArrayList< AccessPoint > aps; // A list of APs stored in the table.
-   boolean writeDebugFile; // Indicates if we want to write another debug file which will include more information about the APs.
-   private AndroidLog tableLog;
-   private AndroidLog tableLog_debug;
+   @Override
+   public int describeContents() {
+	   return 0;
+   }
+   
+   @Override
+   public void writeToParcel(Parcel dest, int flags) {
+	   // REMEMBER: The order you write to the Parcel is the same order it must be read
+	   dest.writeTypedList(aps);
+   }
+   
+   @SuppressWarnings("rawtypes")
+   public static final Parcelable.Creator CREATOR = 
+			new Parcelable.Creator() {
+				public APTable createFromParcel(Parcel in)
+				{
+					return new APTable(in);
+				}
+				
+				public APTable[] newArray(int size)
+				{
+					return new APTable[size];
+				}
+			};
 }
