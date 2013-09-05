@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.net.wifi.ScanResult;
 import android.util.Log;
 
+import com.tracme.util.*;
+
 /**
  * The WiFiScanReceiver class is a broadcast receiver for
  * the wifi adapter scanner for this program.
@@ -69,7 +71,7 @@ public class WiFiScanReceiver extends BroadcastReceiver {
       {
         
         // Check if the access point is already in the list
-        if (!wifiDemo.apTable.lookupAP(result, true, scanNumber))
+        if (wifiDemo.apTable.lookupAP(result, true, scanNumber) == 0)
         { //The access point was not found
         	
         	// Create a new access point and add it to the table
@@ -92,14 +94,6 @@ public class WiFiScanReceiver extends BroadcastReceiver {
         
         count++;
       }
-      
-      //Sample newSample = new Sample();
-      //newSample.setScan(wifiDemo.apList);
-      // Set the output of the WiFi scanner to the new sample for this
-      // cell.
-  
-      // Add the newest sample to the latest cell.
-      //wifiDemo.prog.samples.get( wifiDemo.prog.samples.size() - 1 ).getSamples().add( newSample );
   
       wifiDemo.index++;
       

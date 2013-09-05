@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import com.actionbarsherlock.view.MenuItem;
 import com.capstone.TracMe.R;
 import com.slidingmenu.lib.app.SlidingActivity;
+import com.tracme.util.*;
 
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -389,11 +390,10 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 		((EditText) findViewById(R.id.editTextAPTFile)).setFocusable(false);
 		((Spinner) findViewById(R.id.spinner1)).setEnabled(false);
 		((EditText) findViewById(R.id.editNumPoints)).setFocusable(false);
-		//((EditText) findViewById(R.id.editTextYaxis)).setFocusable(false);
 		((EditText) findViewById(R.id.editTextNumSamples)).setFocusable(false);
 
 		// Load the APTable
-		apTable = new APTable(aptablefile);
+		apTable = new APTable(aptablefile + ".txt");
 		apTable.loadTable();
 		
 		
