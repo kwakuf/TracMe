@@ -14,6 +14,7 @@ import android.net.wifi.ScanResult;
  * 
  * @author James Humphrey
  * @author Kwaku Farkye
+ * @author Ken Ugo
  */
 public class APTable
 {
@@ -247,9 +248,7 @@ public class APTable
    }
 
    private ArrayList< AccessPoint > aps; // A list of APs stored in the table.
-   private String tableName; // The file name of the AP table that is loaded.
    boolean writeDebugFile; // Indicates if we want to write another debug file which will include more information about the APs.
-   private boolean multiAttempts = false; //Flag to see if there were multiple attempts of loading the access point table.
    private AndroidLog tableLog;
    private AndroidLog tableLog_debug;
 }

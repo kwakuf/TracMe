@@ -63,7 +63,7 @@
             android:layout_weight="0.50"
             android:background="#666666"
             android:gravity="center_vertical"
-            android:text="Grid Dimensions" />
+            android:text="Number of points" />
 
         <TextView
             android:id="@+id/textViewDirection"
@@ -81,25 +81,17 @@
         android:layout_height="wrap_content" >
 
         <EditText
-            android:id="@+id/editTextXaxis"
+            android:id="@+id/editNumPoints"
             android:layout_width="50dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-            android:layout_marginRight="10dp"
+            android:layout_marginRight="90dp"
             android:layout_marginLeft="10dp"
             android:ems="10"
             android:hint="@string/x_axis"
             android:inputType="number" />
 
-        <EditText
-            android:id="@+id/editTextYaxis"
-            android:layout_width="50dp"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="10dp"
-            android:layout_marginTop="5dp"
-            android:ems="10"
-            android:hint="@string/y_axis"
-            android:inputType="number" />
+        
 
         <Spinner
             android:id="@+id/spinner1"
@@ -142,7 +134,5 @@
 		        android:layout_gravity="right"
 		        android:text="Set Values" />        
     </LinearLayout>
-    
-
-  
+     
 </LinearLayout>

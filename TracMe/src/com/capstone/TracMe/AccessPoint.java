@@ -6,7 +6,7 @@ import java.util.Comparator;
  * Represents various information that can be obtained from a wireless access
  * point. The most relevant information for this project is the ID, BSSID, and
  * RSSI data. Please consult the source code for more information about what
- * each accessor/mutator methods represents.
+ * each methods represents.
  * 
  * @author James Humphrey
  * @author Kwaku Farkye

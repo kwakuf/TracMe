@@ -1,7 +1,6 @@
 package com.capstone.TracMe;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import com.actionbarsherlock.view.MenuItem;
 import com.capstone.TracMe.R;
@@ -12,9 +11,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.IntentFilter;
-import android.graphics.Point;
-import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.text.format.Time;
@@ -27,50 +23,105 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+/**
+ * Class that represents an android Activity. This activity is the main activity for
+ * the TracMe Sampling app. This Activity handles inputting sample program information,
+ * running scans, and saving output to file
+ * 
+ * @author Kwaku Farkye
+ * @author Ken Ugo
+ *
+ */
 public class TracMe extends SlidingActivity implements OnClickListener {
 	private static final String TAG = "WiFiDemo";
-	private static String SOMETHING_HAPPENED = "com.example.somethinghappened";
-	private static String EXTRA_INTEGER = "extra integer hey";
 
+	/** Wifi scan manager used for scanning phone for Access points */
 	WifiManager wifi;
+	
+	/** Broadcast receiver for Wifi Scanner */
 	BroadcastReceiver receiver2;
+	
+	/** Wifi receiver for Wifi Scan Service */
 	WiFiScanReceiver receiver;
+	
+	/** Access point object that saves each access point's rssis received */
 	AccessPoint ap;
+	
+	/** Text view representing the program console. */
 	TextView textStatus;
+	
+	/** Button used for starting a scan */
 	Button buttonScan;
+	
+	/** Button used for setting input data */
 	Button buttonSet;
+	
+	/** Button used for displaying GPS information */
 	Button buttonGps;
+	
+	/** Button used for saving results */
 	Button buttonSave;
+
+	/** Access point table that holds all access points received from this run */
 	APTable apTable;
+	
+	/** Instance of SampleProgram Object for saving results */
 	SampleProgram prog = new SampleProgram();
+	
+	/** AlertDialog for keeping track of scans */
 	AlertDialog dialog;
+	
+	/** GPS Tracker for getting GPS information */
 	GPSTracker gps;
 
+	/** Name of the output file to write data to */
 	String outputfile;
+	
+	/** Name of access point table file to write access point data to */
 	String aptablefile;
+	
+	/** String for checking if button was pressed */
 	String buttonPressed = "none";
+	
+	/** Number of samples per point */
 	int numSamples = 0;
+	
+	/** Direction facing while sampling (North, South, East, West, Northeast, etc..)*/
 	String direction;
+	
+	/** Number of points to be sampled in x direction */
 	int maxX;
+	
+	/** Max number of points in y direction */
 	int maxY;
-	int totalSamples;
 	
-	private static int totalScans; // The total number of scans to be done in this instance of the application
+	/** Total number of sample points to be done for this run of the program */
+	int totalSamplePoints;
 	
-    /** name of the raw output file */
-    private String rawFileName = "";
-    
-    /** point that will be sampled */
+	/** The total number of scans to be done in this instance of the application */
+	private static int totalScans;
+	 
+    /** Point that will be sampled */
     private int point;
     
     /** The raw file itself */
     private AndroidLog rawFile;
 
+    /** Index of current scan */
 	int index = 0;
+	
+	/** Flag to see whether input values have been confirmed */
 	int valuesConfirmed = 0;
+	
+	/** The list of AP data for the current scan. */
+	protected ArrayList<AccessPoint> apList;
 
-	/** Called when the activity is first created. */
 	@Override
+	/**
+	 * Called when the activity is first created
+	 * 
+	 * @param savedInstanceState Bundled information that was saved on the previous run.
+	 */
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
@@ -78,6 +129,7 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 		// Setup Action Bar Sherlock and Sliding Menu
 		setBehindContentView(R.layout.activity_menu);
 
+		// Setup the sliding menu
 		getSlidingMenu().setShadowWidthRes(R.dimen.shadow_width);
 		getSlidingMenu().setShadowDrawable(R.drawable.shadow);
 		getSlidingMenu().setBehindOffsetRes(R.dimen.slidingmenu_offset);
@@ -108,6 +160,7 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 
 		registerReceiver((BroadcastReceiver) receiver, new IntentFilter(
 				WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+		
 		Log.d(TAG, "onCreate()");
 
 	}
@@ -150,11 +203,14 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 				Log.d(TAG, "onClick() wifi.startScan()");
 
 				buttonPressed = "scan";
-				String inStr = ((EditText) findViewById(R.id.editLocation))
+				
+				// Read what point we are sampling
+				String inStr = ((EditText) findViewById(R.id.editPoint))
 						.getText().toString();
+				
 				if (inStr.length() <= 0)
 				{
-					alertError("Please enter a name for this point/Location");
+					alertError("Please enter a name for this point");
 				}
 				try {
 					int point = Integer.parseInt(inStr);
@@ -169,73 +225,11 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 					alertError("Please enter a valid input for the point. It must be an integer");
 					return;
 				}
-				// To make the sample cell class happy, we will assign the grid locations
-				// as the point we are sampling
-				prog.setGridX(point);
-				prog.setGridY(point);
 				
 				writeToConsole("Point being sampled is: " + point);
+				
+				//Run the scan
 				scan(0);
-				/** THIS CODE WAS USED WHEN WE HAD A COORDINATE SYSTEM FOR SAMPLING
-				String inputStr = ((EditText) findViewById(R.id.editTextX))
-						.getText().toString();
-				if (inputStr.length() <= 0) {
-					alertError("Please enter a valid input for the X axis");
-					return;
-				}
-				try {
-					int X = Integer.parseInt(inputStr);
-					if (X <= 0 || X > prog.getGridSizeX()) {
-						alertError("Invalid X coordinate");
-						return;
-					}
-					prog.setGridX(X);
-				} catch (NumberFormatException e) {
-					alertError("Please enter a valid input for the X axis");
-					return;
-				}
-				inputStr = ((EditText) findViewById(R.id.editTextY)).getText()
-						.toString();
-				if (inputStr.length() <= 0) {
-					alertError("Please enter a valid input for the Y axis");
-					return;
-				}
-				try {
-					int Y = Integer.parseInt(inputStr);
-					if (Y <= 0 || Y > prog.getGridSizeY()) {
-						alertError("Invalid Y coordinate");
-						return;
-					}
-					prog.setGridY(Y);
-				} catch (NumberFormatException e) {
-					alertError("Please enter a valid input for the Y axis");
-					return;
-				}
-				if (checkCell()) {
-					dialog = new AlertDialog.Builder(this)
-							.setTitle("TracMe")
-							.setMessage(
-									"This cell has already been sampled. Do you want to Redo this cell sample?")
-							.setPositiveButton("Redo",
-									new DialogInterface.OnClickListener() {
-										@Override
-										public void onClick(
-												DialogInterface dialog,
-												int which) {
-											deleteCell();
-											writeToConsole("Coordinate being sampled: "
-													+ prog.getGridX()
-													+ "x"
-													+ prog.getGridY());
-											scan(0);
-											dialog.dismiss();
-										}
-									}).setNeutralButton("Cancel", null).show();
-				} else {
-					writeToConsole("Coordinate being sampled: "
-							+ prog.getGridX() + "x" + prog.getGridY());
-					scan(0);
-				} **/
 			}
 		} else if (view.getId() == R.id.buttonSet) {
 			// This is the submit button for all the unchangeable variables
@@ -246,6 +240,7 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 				return;
 			}
 
+			// Get the name of the output file we will write to
 			String inputStr = ((EditText) findViewById(R.id.editTextOutFile))
 					.getText().toString();
 			if (inputStr.length() <= 0) {
@@ -255,6 +250,7 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 				outputfile = new String(inputStr);
 			}
 
+			// Get the access point table file we will use for this run
 			inputStr = ((EditText) findViewById(R.id.editTextAPTFile))
 					.getText().toString();
 			if (inputStr.length() <= 0) {
@@ -264,39 +260,29 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 				aptablefile = new String(inputStr);
 			}
 
+			// Get the direction
 			inputStr = ((Spinner) findViewById(R.id.spinner1))
 					.getSelectedItem().toString();
 			direction = new String(inputStr);
 
-			inputStr = ((EditText) findViewById(R.id.editTextXaxis)).getText()
+			// Get the number of points to be sampled
+			inputStr = ((EditText) findViewById(R.id.editNumPoints)).getText()
 					.toString();
 			if (inputStr.length() <= 0) {
-				alertError("Please enter a valid input for the X axis");
+				alertError("Please enter a valid number of points");
 				return;
 			}
 			try {
-				int maxNumX = Integer.parseInt(inputStr);
-				prog.setGridSizeX(maxNumX);
+				int maxPoints = Integer.parseInt(inputStr);
+				prog.setNumPoints(maxPoints);
 			} catch (NumberFormatException e) {
-				alertError("Please enter a valid input for the X axis");
+				alertError("Please enter a valid number of points");
 				return;
 			}
+			
+			totalSamplePoints = prog.getNumPoints();
 
-			inputStr = ((EditText) findViewById(R.id.editTextYaxis)).getText()
-					.toString();
-			if (inputStr.length() <= 0) {
-				alertError("Please enter a valid input for the Y axis");
-				return;
-			}
-			try {
-				int maxNumY = Integer.parseInt(inputStr);
-				prog.setGridSizeY(maxNumY);
-				totalSamples = prog.getGridSizeX() * prog.getGridSizeY();
-			} catch (NumberFormatException e) {
-				alertError("Please enter a valid input for the Y axis");
-				return;
-			}
-
+			// Get the number of samples per point
 			inputStr = ((EditText) findViewById(R.id.editTextNumSamples))
 					.getText().toString();
 			if (inputStr.length() <= 0) {
@@ -335,16 +321,13 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 							new DialogInterface.OnClickListener() {
 								@Override
 								public void onClick(DialogInterface dialog,
-										int which) {
-									prog.finishAndSave("", "", apTable);
-									//prog.finishSampling("", ""); // Finish
-																	// sampling
-																	// will be
-																	// in the
-																	// save
-																	// results
-																	// onclick
-																	// event
+										int which)
+								{	
+									// Run our finish and save method to product output file
+									// NOTE: THIS MAY TAKE SOME TIME
+									// TODO: Make this a separate thread from the main thread
+									prog.finishAndSave("Campus Center", "Sample Output File"
+											,apTable);
 									writeToConsole("Sample saved at "
 											+ outputfile + ".txt");
 									dialog.dismiss();
@@ -377,7 +360,7 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 	}
 
 	/**
-	 * Register a new receiver.
+	 * Register a new receiver for scanning wifi adapter.
 	 */
 	public void registerMyReciever() {
 		receiver = new WiFiScanReceiver(this);
@@ -405,14 +388,15 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 		((EditText) findViewById(R.id.editTextOutFile)).setFocusable(false);
 		((EditText) findViewById(R.id.editTextAPTFile)).setFocusable(false);
 		((Spinner) findViewById(R.id.spinner1)).setEnabled(false);
-		((EditText) findViewById(R.id.editTextXaxis)).setFocusable(false);
-		((EditText) findViewById(R.id.editTextYaxis)).setFocusable(false);
+		((EditText) findViewById(R.id.editNumPoints)).setFocusable(false);
+		//((EditText) findViewById(R.id.editTextYaxis)).setFocusable(false);
 		((EditText) findViewById(R.id.editTextNumSamples)).setFocusable(false);
 
 		// Load the APTable
 		apTable = new APTable(aptablefile);
 		apTable.loadTable();
-
+		
+		
 		prog.setSampleFileName(outputfile);
 		setRawFile(outputfile);
 		prog.setDirection(direction);
@@ -422,57 +406,42 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 		writeToConsole("Output file set to: " + outputfile + ".txt");
 		writeToConsole("AP Table file set to: " + aptablefile + ".txt");
 		writeToConsole("Sampling direction set to: " + direction);
-		writeToConsole("Grid dimensions set to: " + prog.getGridSizeX() + "x"
-				+ prog.getGridSizeY());
+		writeToConsole("Number of points set to: " + prog.getNumPoints());
 		writeToConsole("Number of samples per cell: " + numSamples);
 		valuesConfirmed = 1;
 		
 		//Set the total number of scans to be done this run of the application
-		totalScans = prog.getGridSizeX() * prog.getGridSizeY() * prog.getNumSamples();
+		totalScans = prog.getNumPoints() * prog.getNumSamples();
 		//Set the total number of scans for each access point in the array list
 		apTable.setTotalScans(totalScans);
 		
 	}
 
+	/**
+	 * Method to alert the user of an error while running the program.
+	 * 
+	 * @param msg Message to alert the user
+	 */
 	public void alertError(String msg) {
 		dialog = new AlertDialog.Builder(this).setTitle("Error")
 				.setMessage(msg).setNeutralButton("Close", null).show();
 	}
 
-	public boolean checkCell() {
-		for (int cellCheck = 0; cellCheck < prog.getSamples().size(); cellCheck++) {
-			if (prog.getGridX() == prog.getSamples().get(cellCheck).getLoc().x
-					&& prog.getGridY() == prog.getSamples().get(cellCheck)
-							.getLoc().y) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public void deleteCell() {
-		Point tstPoint = new Point(prog.getGridX(), prog.getGridSizeY());
-
-		for (int i = 0; i < prog.samples.size(); i++) {
-			if (prog.samples.get(i).getLoc().equals(tstPoint)) {
-				prog.samples.remove(i);
-			}
-		}
-	}
-
 	/**
-	 * This function is the main driver for the wifi scan process
+	 * Main driver for scanning and receiving results from wifi adapter. 
+	 * 
+	 * @param ndx Scan number we will start on. 
+	 * This is necessary because this method is recursive.
+	 * 
 	 */
-	public ArrayList<AccessPoint> scan(int ndx) {
+	public void scan(int ndx) {
 		if (ndx == 0) {
 			index = 0; // Reset index
 
-			// Create the sample cell
-			prog.runCellSample();
-
+			prog.addPoint(point);
+			
 			dialog = new AlertDialog.Builder(this).setTitle("TracMe")
 					.setMessage("Scanning").show();
-			// TODO add a progress bar to this alert
 		}
 		if (ndx != numSamples) { // This index will be the variable
 			dialog.setMessage("Scanning: " + ndx + "/" + numSamples
@@ -484,16 +453,16 @@ public class TracMe extends SlidingActivity implements OnClickListener {
 					+ " Complete");
 			dialog.dismiss();
 			writeToConsole("Number of samples done: "
-					+ prog.getSamples().size());
-			writeToConsole("Number of samples needed: " + (totalSamples));
+					+ prog.getPointsSampled());
+			writeToConsole("Number of samples needed: " + (totalSamplePoints));
 			buttonPressed = "none";
 			// Check if correct amount of samples have been done
-			// if( prog.getSamples().size() == totalSamples )
-			if (prog.getSamples().size() > 0) {
+			if (prog.getPointsSampled() >= totalSamplePoints) {
 				buttonSave.setEnabled(true);
+				// Disable the scan button
+				buttonScan.setEnabled(false);
 			}
 		}
-		return receiver.getApList();
 	}
 
     /**
@@ -540,26 +509,40 @@ public class TracMe extends SlidingActivity implements OnClickListener {
     	return this.point;
     }
     
+    /**
+     * Writes the message to the app's console
+     * 
+     * @param msg Message to write to console
+     */
 	public void writeToConsole(String msg) {
-		// Add a timestaamp
+		// Add a time stamp
 		Time today = new Time(Time.getCurrentTimezone());
 		today.setToNow();
 		textStatus.append("\n(" + today.format("%k:%M") + "): " + msg);
 	}
 
+	/**
+	 * Method that re-initializes the Access Point List to a new ArrayList
+	 * 
+	 */
 	public void newList() {
 		apList = new ArrayList<AccessPoint>();
 	}
 
+	/**
+	 * Getter for the access point list
+	 * 
+	 * @return An ArrayList of access points
+	 */
 	public ArrayList<AccessPoint> getApList() {
 		return apList;
 	}
-
-	/**
-	 * The list of AP data for the current scan.
-	 */
-	protected ArrayList<AccessPoint> apList;
 	
+	/**
+	 * Getter for the total number of scans for this run of the program
+	 * 
+	 * @return Total number of scans for this run of the program
+	 */
 	public int getTotalScans()
 	{
 		return totalScans;
